@@ -1,6 +1,10 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { Gender } from 'src/app/models/ui-models/gender.model';
 import { Student } from 'src/app/models/ui-models/student.model';
+import { GenderService } from 'src/app/services/gender.service';
 import { StudentService } from '../student.service';
 
 @Component({
@@ -30,9 +34,14 @@ export class ViewStudentComponent implements OnInit {
     },
   };
 
+  genderList: Gender[] = [];
+  durationInSeconds = 2;
+
   constructor(
     private readonly studentService: StudentService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly genderServive: GenderService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -45,7 +54,28 @@ export class ViewStudentComponent implements OnInit {
           .subscribe((successResponse) => {
             this.student = successResponse;
           });
+
+        this.genderServive.getGenderList().subscribe((successResponse) => {
+          this.genderList = successResponse;
+        });
       }
     });
+  }
+
+  OnUpdate(): void {
+    this.studentService.updateStudent(this.student.id, this.student).subscribe(
+      (successResponse) => {
+        // Show notifaction
+        this.snackBar.open('Student updated successfully', undefined, {
+          duration: this.durationInSeconds * 1000,
+        });
+      },
+      (errorResponse) => {
+        // Show notifaction
+        this.snackBar.open('Error - Student update failed!', undefined, {
+          duration: this.durationInSeconds * 1000,
+        });
+      }
+    );
   }
 }
