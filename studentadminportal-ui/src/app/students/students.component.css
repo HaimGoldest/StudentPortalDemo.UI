@@ -16,3 +16,7 @@ table {
 .searh-input:focus {
   border: 1px solid #aaa;
 }
+
+.Container {
+  margin: 10px;
+}

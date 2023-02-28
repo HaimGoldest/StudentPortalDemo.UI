@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Gender } from 'src/app/models/ui-models/gender.model';
 import { Student } from 'src/app/models/ui-models/student.model';
 import { GenderService } from 'src/app/services/gender.service';
@@ -41,7 +41,8 @@ export class ViewStudentComponent implements OnInit {
     private readonly studentService: StudentService,
     private readonly route: ActivatedRoute,
     private readonly genderServive: GenderService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -72,7 +73,26 @@ export class ViewStudentComponent implements OnInit {
       },
       (errorResponse) => {
         // Show notifaction
-        this.snackBar.open('Error - Student update failed!', undefined, {
+        this.snackBar.open('Error - failed to update the Student!', undefined, {
+          duration: this.durationInSeconds * 1000,
+        });
+      }
+    );
+  }
+
+  OnDelete(): void {
+    this.studentService.deleteStudent(this.student.id).subscribe(
+      (successResponse) => {
+        this.snackBar.open('Student deleted successfully', undefined, {
+          duration: this.durationInSeconds * 1000,
+        });
+
+        setTimeout(() => {
+          this.router.navigateByUrl('students');
+        }, this.durationInSeconds * 1000);
+      },
+      (errorResponse) => {
+        this.snackBar.open('Error - failed to delete the Student!', undefined, {
           duration: this.durationInSeconds * 1000,
         });
       }
