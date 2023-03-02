@@ -34,8 +34,13 @@ export class ViewStudentComponent implements OnInit {
     },
   };
 
+  studentPage = 'students';
+
+  isNewStudent = true;
+  header = '';
+
   genderList: Gender[] = [];
-  durationInSeconds = 2;
+  waitDuration = 2000;
 
   constructor(
     private readonly studentService: StudentService,
@@ -50,11 +55,19 @@ export class ViewStudentComponent implements OnInit {
       this.studentId = params.get('id');
 
       if (this.studentId) {
-        this.studentService
-          .getStudent(this.studentId)
-          .subscribe((successResponse) => {
-            this.student = successResponse;
-          });
+        if (this.studentId.toLowerCase() === 'add') {
+          this.isNewStudent = true;
+          this.header = 'Add New Student';
+        } else {
+          this.isNewStudent = false;
+          this.header = 'Edit Student';
+
+          this.studentService
+            .getStudent(this.studentId)
+            .subscribe((successResponse) => {
+              this.student = successResponse;
+            });
+        }
 
         this.genderServive.getGenderList().subscribe((successResponse) => {
           this.genderList = successResponse;
@@ -66,16 +79,16 @@ export class ViewStudentComponent implements OnInit {
   OnUpdate(): void {
     this.studentService.updateStudent(this.student.id, this.student).subscribe(
       (successResponse) => {
-        // Show notifaction
-        this.snackBar.open('Student updated successfully', undefined, {
-          duration: this.durationInSeconds * 1000,
-        });
+        this.showMsgAndMoveToAnotherPage(
+          'Student updated successfully',
+          this.studentPage
+        );
       },
       (errorResponse) => {
-        // Show notifaction
-        this.snackBar.open('Error - failed to update the Student!', undefined, {
-          duration: this.durationInSeconds * 1000,
-        });
+        this.showMsgAndMoveToAnotherPage(
+          'Error - failed to update the Student!',
+          this.studentPage
+        );
       }
     );
   }
@@ -83,19 +96,44 @@ export class ViewStudentComponent implements OnInit {
   OnDelete(): void {
     this.studentService.deleteStudent(this.student.id).subscribe(
       (successResponse) => {
-        this.snackBar.open('Student deleted successfully', undefined, {
-          duration: this.durationInSeconds * 1000,
-        });
-
-        setTimeout(() => {
-          this.router.navigateByUrl('students');
-        }, this.durationInSeconds * 1000);
+        this.showMsgAndMoveToAnotherPage(
+          'Student deleted successfully',
+          this.studentPage
+        );
       },
       (errorResponse) => {
-        this.snackBar.open('Error - failed to delete the Student!', undefined, {
-          duration: this.durationInSeconds * 1000,
-        });
+        this.showMsgAndMoveToAnotherPage(
+          'Error - failed to delete the Student!',
+          this.studentPage
+        );
       }
     );
+  }
+
+  OnAdd(): void {
+    this.studentService.addStudent(this.student).subscribe(
+      (successResponse) => {
+        this.showMsgAndMoveToAnotherPage(
+          'Student added successfully',
+          this.studentPage + `/${successResponse.id}`
+        );
+      },
+      (errorResponse) => {
+        this.showMsgAndMoveToAnotherPage(
+          'Error - failed to add new Student!',
+          this.studentPage + '/add'
+        );
+      }
+    );
+  }
+
+  showMsgAndMoveToAnotherPage(msg: string, path: string): void {
+    this.snackBar.open(msg, undefined, {
+      duration: this.waitDuration,
+    });
+
+    setTimeout(() => {
+      this.router.navigateByUrl(path);
+    }, this.waitDuration);
   }
 }
