@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Gender } from 'src/app/models/ui-models/gender.model';
@@ -43,6 +44,8 @@ export class ViewStudentComponent implements OnInit {
   genderList: Gender[] = [];
   waitDuration = 2000;
 
+  @ViewChild('studentDetailsForm') studentDetailsForm?: NgForm;
+
   constructor(
     private readonly studentService: StudentService,
     private readonly route: ActivatedRoute,
@@ -84,15 +87,22 @@ export class ViewStudentComponent implements OnInit {
   }
 
   OnUpdate(): void {
-    this.studentService.updateStudent(this.student.id, this.student).subscribe(
-      (successResponse) => {
-        this.showMsg('Student updated successfully');
-        this.waitAndMoveToAnotherPage(this.studentPage);
-      },
-      (errorResponse) => {
-        this.showMsg('Error - failed to update the Student!');
-      }
-    );
+    if (this.studentDetailsForm?.form.valid) {
+      this.studentService
+        .updateStudent(this.student.id, this.student)
+        .subscribe(
+          (successResponse) => {
+            this.showMsg('Student updated successfully');
+            this.waitAndMoveToAnotherPage(this.studentPage);
+          },
+          (errorResponse) => {
+            this.showMsg('Error - failed to update the Student!');
+            console.log(errorResponse);
+          }
+        );
+    } else {
+      console.log('studentDetailsForm is not valid.');
+    }
   }
 
   OnDelete(): void {
@@ -108,15 +118,20 @@ export class ViewStudentComponent implements OnInit {
   }
 
   OnAdd(): void {
-    this.studentService.addStudent(this.student).subscribe(
-      (successResponse) => {
-        this.showMsg('Student added successfully');
-        this.waitAndMoveToAnotherPage(this.studentPage);
-      },
-      (errorResponse) => {
-        this.showMsg('Error - failed to add new Student!');
-      }
-    );
+    if (this.studentDetailsForm?.form.valid) {
+      this.studentService.addStudent(this.student).subscribe(
+        (successResponse) => {
+          this.showMsg('Student added successfully');
+          this.waitAndMoveToAnotherPage(this.studentPage);
+        },
+        (errorResponse) => {
+          this.showMsg('Error - failed to add new Student!');
+          console.log(errorResponse);
+        }
+      );
+    } else {
+      console.log('studentDetailsForm is not valid.');
+    }
   }
 
   uploadImage(event: any): void {
@@ -157,14 +172,4 @@ export class ViewStudentComponent implements OnInit {
       this.router.navigateByUrl(path);
     }, this.waitDuration);
   }
-
-  // private waitAndMhowMsgAndMoveToAnotherPage(msg: string, path: string): void {
-  //   this.snackBar.open(msg, undefined, {
-  //     duration: this.waitDuration,
-  //   });
-
-  //   setTimeout(() => {
-  //     this.router.navigateByUrl(path);
-  //   }, this.waitDuration);
-  // }
 }
